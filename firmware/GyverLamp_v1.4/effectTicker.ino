@@ -71,7 +71,8 @@ void changePower()
     FastLED.show();
   }
 
-  #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)          // установка сигнала в пин, управляющий MOSFET транзистором, соответственно состоянию вкл/выкл матрицы
+  // установка сигнала в пин, управляющий MOSFET транзистором, соответственно состоянию вкл/выкл матрицы
+  #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)          
   digitalWrite(MOSFET_PIN, ONflag ? MOSFET_LEVEL : !MOSFET_LEVEL);
   #endif
   
@@ -79,7 +80,9 @@ void changePower()
   TimerManager::TimerHasFired = false;
   TimerManager::TimeToFire = 0ULL;
 
-  if (FavoritesManager::UseSavedFavoritesRunning == 0U)     // если выбрана опция Сохранять состояние (вкл/выкл) "избранного", то ни выключение модуля, ни выключение матрицы не сбрасывают текущее состояние (вкл/выкл) "избранного"
+  // если выбрана опция Сохранять состояние (вкл/выкл) "избранного", 
+  // то ни выключение модуля, ни выключение матрицы не сбрасывают текущее состояние (вкл/выкл) "избранного"
+  if (FavoritesManager::UseSavedFavoritesRunning == 0U)     
   {
       FavoritesManager::TurnFavoritesOff();
   }

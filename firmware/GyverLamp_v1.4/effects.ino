@@ -1,7 +1,8 @@
 // ============= ЭФФЕКТЫ ===============
 
 // ------------- конфетти --------------
-#define FADE_OUT_SPEED        (70U)                         // скорость затухания
+// скорость затухания
+#define FADE_OUT_SPEED        (70U)                         
 void sparklesRoutine()
 {
   for (uint8_t i = 0; i < modes[EFF_SPARKLES].Scale; i++)
@@ -28,7 +29,8 @@ void fader(uint8_t step)
   }
 }
 
-void fadePixel(uint8_t i, uint8_t j, uint8_t step)          // новый фейдер
+ // новый фейдер
+void fadePixel(uint8_t i, uint8_t j, uint8_t step)         
 {
   int32_t pixelNum = getPixelNumber(i, j);
   if (getPixColor(pixelNum) == 0U) return;
@@ -46,7 +48,8 @@ void fadePixel(uint8_t i, uint8_t j, uint8_t step)          // новый фей
 }
 
 // ------------- огонь -----------------
-#define SPARKLES              (1U)                          // вылетающие угольки вкл выкл
+// вылетающие угольки вкл выкл
+#define SPARKLES              (1U)                         
 uint8_t line[WIDTH];
 uint8_t pcnt = 0U;
 
@@ -77,7 +80,8 @@ static const uint8_t hueMask[8][16] PROGMEM =
   {0 , 0 , 0 , 1 , 1 , 0 , 0 , 0 , 0 , 0 , 0 , 1 , 1 , 0 , 0 , 0 }
 };
 
-void fireRoutine(bool isColored)                            // true - цветной огонь, false - белый
+// true - цветной огонь, false - белый
+void fireRoutine(bool isColored)                            
 {
   if (loadingFlag)
   {

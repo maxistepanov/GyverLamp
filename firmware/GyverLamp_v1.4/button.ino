@@ -1,12 +1,14 @@
 #ifdef ESP_USE_BUTTON
 
 bool brightDirection;
-static bool startButtonHolding = false;                     // флаг: кнопка удерживается для изменения яркости/скорости/масштаба лампы кнопкой
+// флаг: кнопка удерживается для изменения яркости/скорости/масштаба лампы кнопкой
+static bool startButtonHolding = false;                     
 
 
 void buttonTick()
 {
-  if (!buttonEnabled)                                       // события кнопки не обрабатываются, если она заблокирована
+   // события кнопки не обрабатываются, если она заблокирована
+  if (!buttonEnabled)                                      
   {
     return;
   }
@@ -100,19 +102,24 @@ void buttonTick()
 
 
   // пятикратное нажатие
-  if (clickCount == 5U)                                     // вывод IP на лампу
+  // вывод IP на лампу
+  if (clickCount == 5U)                                     
   {
     if (espMode == 1U)
     {
       loadingFlag = true;
       
-      #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)      // установка сигнала в пин, управляющий MOSFET транзистором, матрица должна быть включена на время вывода текста
+        // установка сигнала в пин, управляющий MOSFET транзистором,
+        // матрица должна быть включена на время вывода текста
+      #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)    
       digitalWrite(MOSFET_PIN, MOSFET_LEVEL);
       #endif
 
       while(!fillString(WiFi.localIP().toString().c_str(), CRGB::White)) { delay(1); ESP.wdtFeed(); }
 
-      #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)      // установка сигнала в пин, управляющий MOSFET транзистором, соответственно состоянию вкл/выкл матрицы или будильника
+      // установка сигнала в пин, управляющий MOSFET транзистором, 
+      // соответственно состоянию вкл/выкл матрицы или будильника
+      #if defined(MOSFET_PIN) && defined(MOSFET_LEVEL)      
       digitalWrite(MOSFET_PIN, ONflag || (dawnFlag && !manualOff) ? MOSFET_LEVEL : !MOSFET_LEVEL);
       #endif
 
@@ -122,14 +129,16 @@ void buttonTick()
 
 
   // шестикратное нажатие
-  if (clickCount == 6U)                                     // вывод текущего времени бегущей строкой
+  // вывод текущего времени бегущей строкой
+  if (clickCount == 6U)                                     
   {
     printTime(thisTime, true, ONflag);
   }
 
 
   // семикратное нажатие
-  if (ONflag && clickCount == 7U)                           // смена рабочего режима лампы: с WiFi точки доступа на WiFi клиент или наоборот
+  // смена рабочего режима лампы: с WiFi точки доступа на WiFi клиент или наоборот
+  if (ONflag && clickCount == 7U)                           
   {
     espMode = (espMode == 0U) ? 1U : 0U;
     EepromManager::SaveEspMode(&espMode);
@@ -140,7 +149,8 @@ void buttonTick()
     delay(1000);
     #endif
 
-    showWarning(CRGB::Red, 3000U, 500U);                    // мигание красным цветом 3 секунды - смена рабочего режима лампы, перезагрузка
+    // мигание красным цветом 3 секунды - смена рабочего режима лампы, перезагрузка
+    showWarning(CRGB::Red, 3000U, 500U);                  
     ESP.restart();
   }
 
@@ -158,9 +168,12 @@ void buttonTick()
   {
     switch (touch.getHoldClicks())
     {
-      case 0U:                                              // просто удержание (до удержания кнопки кликов не было) - изменение яркости
+       // просто удержание (до удержания кнопки кликов не было) - изменение яркости
+      case 0U:                                             
       {
-        uint8_t delta = modes[currentMode].Brightness < 10U // определение шага изменения яркости: при яркости [1..10] шаг = 1, при [11..16] шаг = 3, при [17..255] шаг = 15
+        // определение шага изменения яркости: при яркости [1..10] шаг = 1, 
+        // при [11..16] шаг = 3, при [17..255] шаг = 15
+        uint8_t delta = modes[currentMode].Brightness < 10U 
           ? 1U
           : 5U;
         modes[currentMode].Brightness =
@@ -177,7 +190,8 @@ void buttonTick()
         break;
       }
 
-      case 1U:                                              // удержание после одного клика - изменение скорости
+       // удержание после одного клика - изменение скорости
+      case 1U:                                             
       {
         modes[currentMode].Speed = constrain(brightDirection ? modes[currentMode].Speed + 1 : modes[currentMode].Speed - 1, 1, 255);
 
@@ -188,7 +202,8 @@ void buttonTick()
         break;
       }
 
-      case 2U:                                              // удержание после двух кликов - изменение масштаба
+        // удержание после двух кликов - изменение масштаба
+      case 2U:                                            
       {
         modes[currentMode].Scale = constrain(brightDirection ? modes[currentMode].Scale + 1 : modes[currentMode].Scale - 1, 1, 100);
 
@@ -208,8 +223,8 @@ void buttonTick()
   }
 
 
-  // кнопка отпущена после удерживания
-  if (ONflag && !touch.isHold() && startButtonHolding)      // кнопка отпущена после удерживания, нужно отправить MQTT сообщение об изменении яркости лампы
+   // кнопка отпущена после удерживания, нужно отправить MQTT сообщение об изменении яркости лампы
+  if (ONflag && !touch.isHold() && startButtonHolding)     
   {
     startButtonHolding = false;
     loadingFlag = true;

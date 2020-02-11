@@ -13,7 +13,8 @@ void parseUDP()
     LOG.println(inputBuffer);
     #endif
 
-    if (Udp.remoteIP() == WiFi.localIP())                   // не реагировать на свои же пакеты
+     // не реагировать на свои же пакеты
+    if (Udp.remoteIP() == WiFi.localIP())                  
     {
       return;
     }
@@ -21,10 +22,14 @@ void parseUDP()
     char reply[MAX_UDP_BUFFER_SIZE];
     processInputBuffer(inputBuffer, reply, true);
 
-    #if (USE_MQTT)                                          // отправка ответа выполнения команд по MQTT, если разрешено
+    // отправка ответа выполнения команд по MQTT, если разрешено
+    #if (USE_MQTT)                                        
     if (espMode == 1U)
     {
-      strcpy(MqttManager::mqttBuffer, reply);               // разрешение определяется при выполнении каждой команды отдельно, команды GET, DEB, DISCOVER и OTA, пришедшие по UDP, игнорируются (приходят раз в 2 секунды от приложения)
+      // разрешение определяется при выполнении каждой команды отдельно,
+      // команды GET, DEB, DISCOVER и OTA, пришедшие по UDP,
+      // игнорируются (приходят раз в 2 секунды от приложения)
+      strcpy(MqttManager::mqttBuffer, reply);               
     }
     #endif
     
@@ -63,7 +68,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
     else if (!strncmp_P(inputBuffer, PSTR("EFF"), 3))
     {
       EepromManager::SaveModesSettings(&currentMode, modes);
-      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+       // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));  
       currentMode = (uint8_t)atoi(buff);
       loadingFlag = true;
       settChanged = true;
@@ -83,7 +89,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("BRI"), 3))
     {
-      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+      // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   
       modes[currentMode].Brightness = constrain(atoi(buff), 1, 255);
       FastLED.setBrightness(modes[currentMode].Brightness);
       loadingFlag = true;
@@ -101,7 +108,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("SPD"), 3))
     {
-      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+       // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));  
       modes[currentMode].Speed = atoi(buff);
       loadingFlag = true;
       settChanged = true;
@@ -118,7 +126,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("SCA"), 3))
     {
-      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+       // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 4
+      memcpy(buff, &inputBuffer[3], strlen(inputBuffer));  
       modes[currentMode].Scale = atoi(buff);
       loadingFlag = true;
       settChanged = true;
@@ -182,7 +191,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       }
       else
       {
-        memcpy(buff, &inputBuffer[8], strlen(inputBuffer)); // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 9
+        // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 9
+        memcpy(buff, &inputBuffer[8], strlen(inputBuffer)); 
         alarms[alarmNum].Time = atoi(buff);
         sendAlarms(inputBuffer);
       }
@@ -204,7 +214,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("DAWN"), 4))
     {
-      memcpy(buff, &inputBuffer[4], strlen(inputBuffer));   // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 5
+       // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 5
+      memcpy(buff, &inputBuffer[4], strlen(inputBuffer));  
       dawnMode = atoi(buff) - 1;
       EepromManager::SaveDawnMode(&dawnMode);
       sendAlarms(inputBuffer);
@@ -217,9 +228,11 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       #endif
     }
 
-    else if (!strncmp_P(inputBuffer, PSTR("DISCOVER"), 8))  // обнаружение приложением модуля esp в локальной сети
+    // обнаружение приложением модуля esp в локальной сети
+    else if (!strncmp_P(inputBuffer, PSTR("DISCOVER"), 8))  
     {
-      if (espMode == 1U)                                    // работает только в режиме WiFi клиента
+       // работает только в режиме WiFi клиента
+      if (espMode == 1U)                                   
       {
         sprintf_P(inputBuffer, PSTR("IP %u.%u.%u.%u:%u"),
           WiFi.localIP()[0],
@@ -237,13 +250,16 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
 
     else if (!strncmp_P(inputBuffer, PSTR("TMR_SET"), 7))
     {
-      memcpy(buff, &inputBuffer[8], 2);                     // взять подстроку, состоящую из 9 и 10 символов, из строки inputBuffer
+      // взять подстроку, состоящую из 9 и 10 символов, из строки inputBuffer
+      memcpy(buff, &inputBuffer[8], 2);                     
       TimerManager::TimerRunning = (bool)atoi(buff);
 
-      memcpy(buff, &inputBuffer[10], 2);                    // взять подстроку, состоящую из 11 и 12 символов, из строки inputBuffer
+      // взять подстроку, состоящую из 11 и 12 символов, из строки inputBuffer
+      memcpy(buff, &inputBuffer[10], 2);                    
       TimerManager::TimerOption = (uint8_t)atoi(buff);
 
-      memcpy(buff, &inputBuffer[12], strlen(inputBuffer));  // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 13
+      // взять подстроку, состоящую последних символов строки inputBuffer, начиная с символа 13
+      memcpy(buff, &inputBuffer[12], strlen(inputBuffer));  
       TimerManager::TimeToFire = millis() + strtoull(buff, &endToken, 10) * 1000;
 
       TimerManager::TimerHasFired = false;
@@ -283,7 +299,8 @@ void processInputBuffer(char *inputBuffer, char *outputBuffer, bool generateOutp
       otaManager.RequestOtaUpdate();
       delay(50);
       otaManager.RequestOtaUpdate();
-      currentMode = EFF_MATRIX;                             // принудительное включение режима "Матрица" для индикации перехода в режим обновления по воздуху
+       // принудительное включение режима "Матрица" для индикации перехода в режим обновления по воздуху
+      currentMode = EFF_MATRIX;                            
       FastLED.clear();
       delay(1);
       ONflag = true;

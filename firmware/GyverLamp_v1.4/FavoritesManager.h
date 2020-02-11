@@ -3,20 +3,29 @@
 #include "EepromManager.h"
 #include "Constants.h"
 
-#define DEFAULT_FAVORITES_INTERVAL           (300U)         // значение по умолчанию для интервала переключения избранных эффектов в секундах
-#define DEFAULT_FAVORITES_DISPERSION         (0U)           // значение по умолчанию для разброса интервала переключения избранных эффектов в секундах
+// значение по умолчанию для интервала переключения избранных эффектов в секундах
+#define DEFAULT_FAVORITES_INTERVAL           (300U)         
+ // значение по умолчанию для разброса интервала переключения избранных эффектов в секундах
+#define DEFAULT_FAVORITES_DISPERSION         (0U)          
 
 
 class FavoritesManager
 {
   public:
-    static uint8_t FavoritesRunning;                        // флаг "работает режим автоматической смены избранных эффектов"
-    static uint16_t Interval;                               // статический интервал (время между сменами эффектов)
-    static uint16_t Dispersion;                             // дополнительный динамический (случайный) интервал (время между сменами эффектов)
-    static uint8_t UseSavedFavoritesRunning;                // флаг, определяющий, нужно ли использовать сохранённое значение FavoritesRunning при перезапуске; еслин нет, "избранное" будет выключено при старте
-    static uint8_t FavoriteModes[MODE_AMOUNT];              // массив, каждый элемент которого соответствует флагу "эффект №... добавлен в избранные"
+      // флаг "работает режим автоматической смены избранных эффектов"
+    static uint8_t FavoritesRunning;                      
+    // статический интервал (время между сменами эффектов)
+    static uint16_t Interval;                               
+    // дополнительный динамический (случайный) интервал (время между сменами эффектов)
+    static uint16_t Dispersion;                             
+    // флаг, определяющий, нужно ли использовать сохранённое значение 
+    // FavoritesRunning при перезапуске; еслин нет, "избранное" будет выключено при старте
+    static uint8_t UseSavedFavoritesRunning;                
+    // массив, каждый элемент которого соответствует флагу "эффект №... добавлен в избранные"
+    static uint8_t FavoriteModes[MODE_AMOUNT];              
 
-    static void SetStatus(char* statusText)                 // помещает в statusText состояние режима работы избранных эффектов
+    // помещает в statusText состояние режима работы избранных эффектов
+    static void SetStatus(char* statusText)                
     {
       char buff[6];
       strcpy_P(statusText, PSTR("FAV "));
@@ -52,7 +61,8 @@ class FavoritesManager
       statusText += '\0';
     }
 
-    static void ConfigureFavorites(const char* statusText)  // принимает statusText, парсит его и инициализирует свойства класса значениями из statusText'а
+    // принимает statusText, парсит его и инициализирует свойства класса значениями из statusText'а
+    static void ConfigureFavorites(const char* statusText) 
     {
       FavoritesRunning = getFavoritesRunning(statusText);
       if (FavoritesRunning == 0)
@@ -68,7 +78,9 @@ class FavoritesManager
       }
     }
 
-    static bool HandleFavorites(                            // функция, обрабатывающая циклическое переключение избранных эффектов; возвращает true, если эффект был переключен
+      // функция, обрабатывающая циклическое переключение избранных эффектов; 
+      // возвращает true, если эффект был переключен
+    static bool HandleFavorites(                            
       bool* ONflag,
       int8_t* currentMode,
       bool* loadingFlag
@@ -78,16 +90,19 @@ class FavoritesManager
     )
     {
       if (FavoritesRunning == 0 ||
-          !*ONflag                                          // лампа не переключается на следующий эффект при выключенной матрице
+          // лампа не переключается на следующий эффект при выключенной матрице
+          !*ONflag                                          
           #ifdef USE_NTP
-          || *dawnFlag                                      // лампа не переключается на следующий эффект при включенном будильнике
+           // лампа не переключается на следующий эффект при включенном будильнике
+          || *dawnFlag                                     
           #endif
       )
       {
         return false;
       }
 
-      if (nextModeAt == 0)                                  // лампа не переключается на следующий эффект сразу после включения режима избранных эффектов
+      // лампа не переключается на следующий эффект сразу после включения режима избранных эффектов
+      if (nextModeAt == 0)                                  
       {
         nextModeAt = getNextTime();
         return false;
@@ -145,16 +160,19 @@ class FavoritesManager
     }
 
   private:
-    static uint32_t nextModeAt;                             // ближайшее время переключения на следующий избранный эффект (millis())
+     // ближайшее время переключения на следующий избранный эффект (millis())
+    static uint32_t nextModeAt;                            
 
-    static bool isStatusTextCorrect(const char* statusText) // валидирует statusText (проверяет, правильное ли количество компонентов он содержит)
+    // валидирует statusText (проверяет, правильное ли количество компонентов он содержит)
+    static bool isStatusTextCorrect(const char* statusText) 
     {
       char buff[MAX_UDP_BUFFER_SIZE];
       strcpy(buff, statusText);
 
       uint8_t lexCount = 0;
       char* p = strtok(buff, " ");
-      while (p != NULL)                                   // пока есть лексемы...
+      // пока есть лексемы...
+      while (p != NULL)                                   
       {
         lexCount++;
         p = strtok(NULL, " ");
@@ -163,9 +181,13 @@ class FavoritesManager
       return lexCount == getStatusTextNormalComponentsCount();
     }
 
-    static uint8_t getStatusTextNormalComponentsCount()     // возвращает правильное ли коичество компонентов для statusText в зависимости от определённого формата команды и количества эффектов
+     // возвращает правильное ли коичество компонентов для statusText 
+     // в зависимости от определённого формата команды и количества эффектов
+    static uint8_t getStatusTextNormalComponentsCount()    
     {
-      // "FAV 0/1 <цифра> <цифра> 0/1 <массив цифр 0/1 для каждого режима>" (вкл/выкл, интервал в секундах, разброс в секундах, использовать ли хранимый вкл/выкл, вкл/выкл каждого эффекта в избранные)
+      // "FAV 0/1 <цифра> <цифра> 0/1 <массив цифр 0/1 для каждого режима>"
+      // (вкл/выкл, интервал в секундах, разброс в секундах, использовать ли хранимый вкл/выкл,
+      // вкл/выкл каждого эффекта в избранные)
       return
         1 +          // "FAV"
         1 +          // вкл/выкл
@@ -175,7 +197,8 @@ class FavoritesManager
         MODE_AMOUNT; // 0/1 для каждого эффекта
     }
 
-    static uint8_t getFavoritesRunning(const char* statusText)        // возвращает признак вкл/выкл режима избранных эффектов из statusText
+    // возвращает признак вкл/выкл режима избранных эффектов из statusText
+    static uint8_t getFavoritesRunning(const char* statusText)      
     {
       char lexem[2];
       memset(lexem, 0, 2);
@@ -185,7 +208,8 @@ class FavoritesManager
         : 0;
     }
 
-    static uint16_t getInterval(const char* statusText)     // возвращает интервал (постоянную составляющую) переключения избранных эффектов из statusText
+     // возвращает интервал (постоянную составляющую) переключения избранных эффектов из statusText
+    static uint16_t getInterval(const char* statusText)    
     {
       char lexem[6];
       memset(lexem, 0, 6);
@@ -195,7 +219,8 @@ class FavoritesManager
         : DEFAULT_FAVORITES_INTERVAL;
     }
 
-    static uint16_t getDispersion(const char* statusText)   // возвращает разброс (случайную составляющую) интервала переключения избранных эффектов из statusText
+    // возвращает разброс (случайную составляющую) интервала переключения избранных эффектов из statusText
+    static uint16_t getDispersion(const char* statusText)   
     {
       char lexem[6];
       memset(lexem, 0, 6);
@@ -205,7 +230,8 @@ class FavoritesManager
         : DEFAULT_FAVORITES_DISPERSION;
     }
 
-    static uint8_t getUseSavedFavoritesRunning(const char* statusText)// возвращает признак вкл/выкл режима избранных эффектов из statusText
+    // возвращает признак вкл/выкл режима избранных эффектов из statusText
+    static uint8_t getUseSavedFavoritesRunning(const char* statusText)
     {
       char lexem[2];
       memset(lexem, 0, 2);
@@ -215,7 +241,8 @@ class FavoritesManager
         : 0;
     }
 
-    static bool getModeOnOff(const char* statusText, uint8_t modeId)  // возвращает признак включения указанного эффекта в избранные эффекты
+    // возвращает признак включения указанного эффекта в избранные эффекты
+    static bool getModeOnOff(const char* statusText, uint8_t modeId)  
     {
       char lexem[2];
       memset(lexem, 0, 2);
@@ -225,7 +252,9 @@ class FavoritesManager
         : false;
     }
 
-    static char* getLexNo(const char* statusText, uint8_t pos)        // служебная функция, разбивает команду statusText на лексемы ("слова", разделённые пробелами) и возвращает указанную по счёту лексему
+     // служебная функция, разбивает команду statusText на лексемы
+     // ("слова", разделённые пробелами) и возвращает указанную по счёту лексему
+    static char* getLexNo(const char* statusText, uint8_t pos)       
     {
       if (!isStatusTextCorrect(statusText))
       {
@@ -239,7 +268,8 @@ class FavoritesManager
 
       uint8_t lexPos = 0;
       char* p = strtok(buff, " ");
-      while (p != NULL)                                   // пока есть лексемы...
+      // пока есть лексемы...
+      while (p != NULL)                                   
       {
         if (lexPos == pos)
         {
@@ -253,11 +283,14 @@ class FavoritesManager
       return NULL;
     }
 
-    static int8_t getNextFavoriteMode(int8_t* currentMode)  // возвращает следующий (случайный) включенный в избранные эффект
+     // возвращает следующий (случайный) включенный в избранные эффект
+    static int8_t getNextFavoriteMode(int8_t* currentMode) 
     {
       int8_t result = *currentMode;
 
-      for (int8_t tryNo = 0; tryNo <= random(0, MODE_AMOUNT); tryNo++)// случайное количество попыток определения следующего эффекта; без этого будет выбран следующий (избранный) по порядку после текущего
+      // случайное количество попыток определения следующего эффекта;
+      // без этого будет выбран следующий (избранный) по порядку после текущего
+      for (int8_t tryNo = 0; tryNo <= random(0, MODE_AMOUNT); tryNo++)
       {
         for (uint8_t i = (result + 1); i <= (result + MODE_AMOUNT); i++)
         {
@@ -272,7 +305,8 @@ class FavoritesManager
       return result;
     }
 
-    static uint32_t getNextTime()                           // определяет время следующего переключения на следующий избранный эффект
+     // определяет время следующего переключения на следующий избранный эффект
+    static uint32_t getNextTime()                          
     {
       return millis() + Interval * 1000 + random(0, Dispersion + 1) * 1000;
     }
